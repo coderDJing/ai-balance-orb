@@ -44,4 +44,11 @@ jobs:
         run: pnpm check:desktop
 
       - name: Build desktop bundle
-        run: pnpm tauri:build -- --ci
+        run: pnpm tauri:build
+
+      - name: Upload desktop bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-balance-orb-${{ runner.os }}
+          path: src-tauri/target/release/bundle/**/*
+          if-no-files-found: error
