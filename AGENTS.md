@@ -13,7 +13,7 @@
 - The updater endpoint is:
 
 ```text
-https://github.com/coderDJing/ai-balance-orb/releases/latest/download/latest.json
+https://github.com/coderDJing/ai-balance-widget-new-api/releases/latest/download/latest.json
 ```
 
 - The updater public key lives in `src-tauri/tauri.conf.json`.

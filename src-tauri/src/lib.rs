@@ -186,7 +186,7 @@ async fn query_balance(app: AppHandle) -> Result<BalanceSnapshot, String> {
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(15))
-        .user_agent("ai-balance-orb/0.1")
+        .user_agent("ai-balance-widget-new-api/0.1")
         .build()
         .map_err(|err| format!("创建 HTTP 客户端失败: {err}"))?;
 
@@ -450,7 +450,7 @@ fn write_config(app: &AppHandle, config: &StoredConfig) -> Result<(), String> {
 async fn verify_config(config: &StoredConfig) -> Result<(), String> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(10))
-        .user_agent("ai-balance-orb/0.1")
+        .user_agent("ai-balance-widget-new-api/0.1")
         .build()
         .map_err(|err| format!("创建 HTTP 客户端失败: {err}"))?;
 
@@ -540,7 +540,7 @@ fn install_tray(app: &mut App) -> tauri::Result<()> {
     let mut tray = TrayIconBuilder::with_id("main")
         .menu(&menu)
         .show_menu_on_left_click(false)
-        .tooltip("AI Balance Orb")
+        .tooltip("AI Balance Widget for New API")
         .on_menu_event(|app, event| match event.id().as_ref() {
             "settings" => {
                 let _ = show_settings(app);

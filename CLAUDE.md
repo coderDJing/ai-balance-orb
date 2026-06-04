@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-AI Balance Orb 是一个基于 **Tauri v2** 的 Windows 桌面悬浮球小部件，用于轮询 New API 兼容的余额接口并实时显示账户余额。关闭窗口时最小化到系统托盘而非退出。
+AI Balance Widget for New API 是一个基于 **Tauri v2** 的 Windows 桌面小部件，用于轮询 New API 兼容的余额接口并实时显示账户余额。关闭窗口时最小化到系统托盘而非退出。
 
 ## 常用命令
 
@@ -120,7 +120,7 @@ C:\Users\coder\.tauri\ai-balance-orb.key
 Tauri updater endpoint：
 
 ```text
-https://github.com/coderDJing/ai-balance-orb/releases/latest/download/latest.json
+https://github.com/coderDJing/ai-balance-widget-new-api/releases/latest/download/latest.json
 ```
 
 发布产物必须包含 Windows installer、installer signature 和 `latest.json`。release build 启动时会自动检查更新，托盘菜单也提供“检查更新”。

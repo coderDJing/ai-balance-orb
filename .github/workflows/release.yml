@@ -43,7 +43,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
-          releaseName: "AI Balance Orb v__VERSION__"
+          releaseName: "AI Balance Widget for New API v__VERSION__"
           releaseBody: "Windows installer and signed updater metadata."
           releaseDraft: false
           prerelease: false

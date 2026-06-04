@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "AI Balance Orb",
+  "productName": "AI Balance Widget for New API",
   "version": "0.1.0",
-  "identifier": "com.coderdjing.aibalanceorb",
+  "identifier": "com.coderdjing.aibalancewidgetnewapi",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "AI Balance Orb",
+        "title": "AI Balance Widget for New API",
         "width": 280,
         "height": 120,
         "minWidth": 220,
@@ -56,7 +56,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcxRkY3MzhDRTJBOUM4RUEKUldUcXlLbmlqSFAvY1I1dnBza01hTWFXUlY2R2JqL0tQaEcrWUJKRmZ5NkYzeE45QVlpaENpdTkK",
       "endpoints": [
-        "https://github.com/coderDJing/ai-balance-orb/releases/latest/download/latest.json"
+        "https://github.com/coderDJing/ai-balance-widget-new-api/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"

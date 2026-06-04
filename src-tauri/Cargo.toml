@@ -1,5 +1,5 @@
 [package]
-name = "ai-balance-orb"
+name = "ai-balance-widget-new-api"
 version = "0.1.0"
 description = "A frameless AI balance desktop orb"
 authors = ["coderDJing"]
