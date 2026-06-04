@@ -7,6 +7,12 @@
 
 AI Balance Widget for New API 是一个基于 Tauri v2 的 Windows 桌面小部件，用于轮询 New API 兼容的余额接口并实时显示账户余额。每分钟自动刷新，仅显示数字余额，并提供系统托盘菜单用于打开小部件、修改设置、检查更新和退出程序。
 
+## 关于 New API
+
+[New API](https://github.com/QuantumNous/new-api) 是一个下一代 LLM 网关和 AI 资产管理系统，提供统一的 OpenAI 兼容 API，支持多种 AI 模型，具备渠道路由、用量分析、成本核算和组织级访问控制等功能。
+
+本小部件专为配合 New API 部署使用而设计。使用前需要一个有效的 New API 实例和账户。
+
 ## 凭据配置
 
 凭据和 API 端点不会存储在本仓库中。

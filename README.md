@@ -10,6 +10,16 @@ checking a New API style account balance endpoint. It polls once per minute,
 shows only the numeric remaining balance, and keeps tray commands for showing
 the widget, opening settings, checking updates, and exiting.
 
+## About New API
+
+[New API](https://github.com/QuantumNous/new-api) is a next-generation LLM
+gateway and AI asset management system. It provides a unified OpenAI-compatible
+API for multiple AI models, with features like channel routing, usage analytics,
+cost accounting, and organization-level access control.
+
+This widget is designed to work with New API deployments. To use it, you need a
+running New API instance with a valid account.
+
 ## Credentials
 
 Credentials and provider endpoints are not stored in this repository.
