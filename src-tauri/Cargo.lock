@@ -19,7 +19,7 @@ dependencies = [
 
 [[package]]
 name = "ai-balance-widget-new-api"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "ctrlc",
  "reqwest 0.12.28",

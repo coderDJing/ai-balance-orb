@@ -436,6 +436,43 @@ button {
   background: rgba(255, 99, 99, 0.2);
 }
 
+.settings-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10;
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.orb-window:hover .settings-btn,
+.settings-btn.always-visible {
+  opacity: 1;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(222, 216, 201, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .settings-shell {
   padding: 0;
 }

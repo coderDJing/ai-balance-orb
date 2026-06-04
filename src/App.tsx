@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { Save, X } from "lucide-react";
+import { Save, Settings, X } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getVersion } from "@tauri-apps/api/app";
@@ -284,6 +284,8 @@ function BalanceWindow() {
   const [balanceText, setBalanceText] = useState(formatBalance(null));
   const [displayText, setDisplayText] = useState(formatBalance(null));
   const [activeFlips, setActiveFlips] = useState<Record<number, ActiveFlip>>({});
+  const [queryStatus, setQueryStatus] = useState<"loading" | "error" | "ready">("loading");
+  const [errorMsg, setErrorMsg] = useState("");
   const displayTextRef = useRef(formatBalance(null));
   const flipTimersRef = useRef<number[]>([]);
   const flipVersionRef = useRef(0);
@@ -384,7 +386,6 @@ function BalanceWindow() {
       if (!snapshot.configured) {
         if (!promptedSetupRef.current) {
           promptedSetupRef.current = true;
-          await hideWindow();
           await showSettings();
         }
         return;
@@ -393,6 +394,8 @@ function BalanceWindow() {
       const nextText = formatBalance(snapshot.remaining);
       setBalanceText(nextText);
       animateBalance(nextText);
+      setQueryStatus("ready");
+      setErrorMsg("");
     } catch {
       // 静默处理错误
     }
@@ -407,20 +410,22 @@ function BalanceWindow() {
 
       if (!loaded.hasAccessToken || !loaded.endpointUrl || !loaded.userId) {
         promptedSetupRef.current = true;
-        await hideWindow();
+        setQueryStatus("error");
+        setErrorMsg("请先完成配置");
         await showSettings();
         return;
       }
       refreshIntervalMs.current = (loaded.refreshIntervalSecs || 60) * 1000;
 
-      // 启动时先检查接口连通性
+      setQueryStatus("loading");
       try {
         const snapshot = await runCommand<BalanceSnapshot>("query_balance");
         if (!mounted) return;
 
         if (!snapshot.configured) {
           promptedSetupRef.current = true;
-          await hideWindow();
+          setQueryStatus("error");
+          setErrorMsg("请先完成配置");
           await showSettings();
           return;
         }
@@ -428,12 +433,12 @@ function BalanceWindow() {
         const nextText = formatBalance(snapshot.remaining);
         setBalanceText(nextText);
         animateBalance(nextText);
-      } catch {
-        // 接口不连通，显示设置窗口
+        setQueryStatus("ready");
+        setErrorMsg("");
+      } catch (err) {
         if (mounted) {
-          promptedSetupRef.current = true;
-          await hideWindow();
-          await showSettings();
+          setQueryStatus("error");
+          setErrorMsg(err instanceof Error ? err.message : "接口连接失败");
         }
       }
     }
@@ -467,6 +472,8 @@ function BalanceWindow() {
     let unlisten: (() => void) | undefined;
     listen<ClientConfig>("config-saved", async (event) => {
       promptedSetupRef.current = false;
+      setQueryStatus("loading");
+      setErrorMsg("");
       if (event.payload?.refreshIntervalSecs) {
         refreshIntervalMs.current = event.payload.refreshIntervalSecs * 1000;
       }
@@ -491,65 +498,80 @@ function BalanceWindow() {
   return (
     <main className="shell main-shell" onMouseDown={startWindowDrag} onDoubleClick={showSettings}>
       <div className="orb-window">
+        <button
+          className={`icon-button settings-btn${queryStatus !== "ready" ? " always-visible" : ""}`}
+          type="button"
+          title="设置"
+          onClick={showSettings}
+        >
+          <Settings size={14} />
+        </button>
         <div className="balance-number">
-          <div
-            className="flap-machine"
-            aria-label={`余额 ${balanceText}`}
-            style={{ "--flap-scale": flapScale } as CSSProperties}
-          >
-            {balanceChars.map((char, index) => {
-              if (!isFlipDigit(char)) {
-                const staticClassName = `flap-static${char === "," ? " separator" : ""}${
-                  char === "." ? " decimal" : ""
-                }${char === "-" ? " minus" : ""}`;
+          {queryStatus === "loading" ? (
+            <div className="loading-indicator">查询中...</div>
+          ) : (
+            <div
+              className="flap-machine"
+              aria-label={`余额 ${balanceText}`}
+              style={{ "--flap-scale": flapScale } as CSSProperties}
+            >
+              {balanceChars.map((char, index) => {
+                if (!isFlipDigit(char)) {
+                  const staticClassName = `flap-static${char === "," ? " separator" : ""}${
+                    char === "." ? " decimal" : ""
+                  }${char === "-" ? " minus" : ""}`;
+                  return (
+                    <span key={`static-${index}-${char}`} className={staticClassName}>
+                      {char}
+                    </span>
+                  );
+                }
+
+                const activeFlip = activeFlips[index];
+                const topChar = activeFlip?.to || char;
+                const bottomChar = activeFlip?.from || char;
+                const flapStyle = {
+                  "--flap-duration": `${FLAP_DURATION_MS}ms`,
+                } as CSSProperties;
+
                 return (
-                  <span key={`static-${index}-${char}`} className={staticClassName}>
-                    {char}
+                  <span
+                    key={`flap-${index}`}
+                    className={`flap-card${activeFlip ? " is-flipping" : ""}`}
+                    style={flapStyle}
+                    aria-hidden="true"
+                  >
+                    <span className="flap-half flap-top current">
+                      <span className="flap-glyph">{topChar}</span>
+                    </span>
+                    <span className="flap-half flap-bottom current">
+                      <span className="flap-glyph">{bottomChar}</span>
+                    </span>
+                    {activeFlip && (
+                      <>
+                        <span
+                          key={`old-${activeFlip.version}`}
+                          className="flap-half flap-top old"
+                        >
+                          <span className="flap-glyph">{activeFlip.from}</span>
+                        </span>
+                        <span
+                          key={`next-${activeFlip.version}`}
+                          className="flap-half flap-bottom next"
+                        >
+                          <span className="flap-glyph">{activeFlip.to}</span>
+                        </span>
+                      </>
+                    )}
                   </span>
                 );
-              }
-
-              const activeFlip = activeFlips[index];
-              const topChar = activeFlip?.to || char;
-              const bottomChar = activeFlip?.from || char;
-              const flapStyle = {
-                "--flap-duration": `${FLAP_DURATION_MS}ms`,
-              } as CSSProperties;
-
-              return (
-                <span
-                  key={`flap-${index}`}
-                  className={`flap-card${activeFlip ? " is-flipping" : ""}`}
-                  style={flapStyle}
-                  aria-hidden="true"
-                >
-                  <span className="flap-half flap-top current">
-                    <span className="flap-glyph">{topChar}</span>
-                  </span>
-                  <span className="flap-half flap-bottom current">
-                    <span className="flap-glyph">{bottomChar}</span>
-                  </span>
-                  {activeFlip && (
-                    <>
-                      <span
-                        key={`old-${activeFlip.version}`}
-                        className="flap-half flap-top old"
-                      >
-                        <span className="flap-glyph">{activeFlip.from}</span>
-                      </span>
-                      <span
-                        key={`next-${activeFlip.version}`}
-                        className="flap-half flap-bottom next"
-                      >
-                        <span className="flap-glyph">{activeFlip.to}</span>
-                      </span>
-                    </>
-                  )}
-                </span>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          )}
         </div>
+        {queryStatus === "error" && errorMsg && (
+          <div className="error-line">{errorMsg}</div>
+        )}
       </div>
     </main>
   );
