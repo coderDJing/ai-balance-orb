@@ -23,22 +23,22 @@ pnpm tauri:build          # 完整桌面打包
 ### 技术栈
 
 - **前端：** React 19 + TypeScript 5.8 + Vite 7 + lucide-react
-- **后端：** Rust (Tauri v2 + reqwest + serde)
+- **后端：** Rust (Tauri v2 + reqwest + serde + tauri-plugin-updater)
 - **包管理器：** pnpm（非 npm/yarn）
 - **Tauri API：** `@tauri-apps/api` v2（注意不是 v1）
 
 ### 代码结构
 
-前端和后端各只有一个核心文件：
+前端和后端逻辑集中在两个核心文件：
 
-- `src/App.tsx` — 整个前端（约 453 行），包含 `BalanceWindow`（主悬浮球）和 `SettingsWindow`（设置表单）两个组件。无路由、无状态管理库。
-- `src-tauri/src/lib.rs` — 整个后端逻辑（约 347 行），5 个 Tauri command（`load_config`、`save_config`、`query_balance`、`hide_window`、`show_settings_window`）和系统托盘初始化。
+- `src/App.tsx` — 整个前端，包含 `BalanceWindow`（主悬浮窗）和 `SettingsWindow`（设置表单）两个组件。无路由、无状态管理库。
+- `src-tauri/src/lib.rs` — 后端逻辑，包含配置读写、余额查询、窗口定位、系统托盘和 signed updater。
 
 ### Tauri 配置
 
 `src-tauri/tauri.conf.json` 定义了两个窗口：
-1. **main** (348×238) — 无边框、透明背景、置顶、不在任务栏显示
-2. **settings** (440×430) — 无边框、透明、初始隐藏
+1. **main** (220-520×120) — 无边框、透明背景、置顶、不在任务栏显示，宽度由余额位数动态调整
+2. **settings** (440×420) — 无边框、透明、初始隐藏
 
 ### 关键业务逻辑
 
@@ -48,10 +48,79 @@ pnpm tauri:build          # 完整桌面打包
 - 端点校验：必须是 HTTPS 或 localhost
 - 前端在非 Tauri 环境（`pnpm dev`）下有 mock 数据，可独立开发 UI
 
-### UI 语言
+### UI
 
-界面文字为中文（如"刷新中"、"异常"、"待配置"、"在线"）。
+主悬浮窗使用机械翻页闹钟风格显示余额，余额固定保留三位小数且不使用千分位逗号。界面文字以中文为主。
 
 ## CI
 
 `.github/workflows/build.yml` 仅在 Windows 运行：`pnpm build` → `pnpm check:desktop` → `pnpm tauri:build`，产物上传为 GitHub Actions artifact。
+
+## 发布流程
+
+发布流程从 `D:\playground\keyboard-lock-osd` 迁移并按本仓库适配。
+
+### 版本规则
+
+发布前必须保持三个版本号一致：
+
+- `package.json` → `"version": "x.y.z"`
+- `src-tauri/Cargo.toml` → `version = "x.y.z"`
+- `src-tauri/tauri.conf.json` → `"version": "x.y.z"`
+
+Git tag 必须使用 `v` 前缀，例如版本 `0.1.1` 对应 tag `v0.1.1`。
+
+### 发布脚本
+
+在项目根目录运行：
+
+```powershell
+.\scripts\release.ps1 0.1.1
+```
+
+脚本会检查当前分支必须是 `master`、工作区必须干净、本地不能落后 `origin/master`，然后同步三个版本文件、运行 `pnpm build`、`pnpm check:desktop` 和 signed debug NSIS updater build，最后提交版本变更、创建 tag、推送 `master` 和 tag。
+
+跳过交互确认：
+
+```powershell
+.\scripts\release.ps1 0.1.1 -Force
+```
+
+不要在用户没有明确要求时运行该脚本，因为它会执行 `git commit`、`git tag` 和 `git push`。
+
+### GitHub Release
+
+`.github/workflows/release.yml` 在以下场景运行：
+
+- 推送 `v*` tag
+- 手动 `workflow_dispatch`
+
+工作流只在 `windows-latest` 构建，使用 `tauri-apps/tauri-action@v0.6.2` 发布 GitHub Release，配置为：
+
+- `releaseDraft: false`
+- `prerelease: false`
+- `updaterJsonPreferNsis: true`
+- `args: --ci`
+
+release workflow 必须配置以下 GitHub repository secrets 才能生成 signed updater 产物：
+
+- `TAURI_SIGNING_PRIVATE_KEY`
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+
+当前本机私钥路径：
+
+```text
+C:\Users\coder\.tauri\ai-balance-orb.key
+```
+
+该私钥没有密码，`TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 可以为空或省略。不要把私钥内容写入仓库。
+
+### Signed Updater
+
+Tauri updater endpoint：
+
+```text
+https://github.com/coderDJing/ai-balance-orb/releases/latest/download/latest.json
+```
+
+发布产物必须包含 Windows installer、installer signature 和 `latest.json`。release build 启动时会自动检查更新，托盘菜单也提供“检查更新”。

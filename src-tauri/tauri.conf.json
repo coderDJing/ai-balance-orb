@@ -14,12 +14,12 @@
       {
         "label": "main",
         "title": "AI Balance Orb",
-        "width": 348,
-        "height": 238,
-        "minWidth": 348,
-        "minHeight": 238,
-        "maxWidth": 348,
-        "maxHeight": 238,
+        "width": 280,
+        "height": 120,
+        "minWidth": 220,
+        "minHeight": 120,
+        "maxWidth": 520,
+        "maxHeight": 120,
         "resizable": false,
         "maximizable": false,
         "minimizable": true,
@@ -33,17 +33,17 @@
         "label": "settings",
         "title": "AI Balance Settings",
         "width": 440,
-        "height": 430,
+        "height": 420,
         "minWidth": 440,
-        "minHeight": 430,
+        "minHeight": 420,
         "maxWidth": 440,
-        "maxHeight": 430,
+        "maxHeight": 420,
         "resizable": false,
         "maximizable": false,
         "minimizable": true,
         "decorations": false,
         "transparent": true,
-        "shadow": true,
+        "shadow": false,
         "visible": false,
         "center": true
       }
@@ -52,9 +52,21 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcxRkY3MzhDRTJBOUM4RUEKUldUcXlLbmlqSFAvY1I1dnBza01hTWFXUlY2R2JqL0tQaEcrWUJKRmZ5NkYzeE45QVlpaENpdTkK",
+      "endpoints": [
+        "https://github.com/coderDJing/ai-balance-orb/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
