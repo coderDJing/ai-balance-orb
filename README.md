@@ -1,5 +1,10 @@
 # AI Balance Widget for New API
 
+<p align="center">
+  <a href="./README.zh_CN.md">简体中文</a> |
+  <strong>English</strong>
+</p>
+
 AI Balance Widget for New API is a frameless Windows Tauri desktop widget for
 checking a New API style account balance endpoint. It polls once per minute,
 shows only the numeric remaining balance, and keeps tray commands for showing
