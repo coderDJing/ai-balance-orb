@@ -604,6 +604,18 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([
+                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir {
+                        file_name: None,
+                    }),
+                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
+                ])
+                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+                .max_file_size(1_000_000)
+                .build(),
+        )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_main_window(app);
         }))
@@ -643,7 +655,7 @@ fn spawn_auto_update_check(app: AppHandle) {
         let updater = match app.updater() {
             Ok(updater) => updater,
             Err(error) => {
-                eprintln!("updater initialization failed: {error}");
+                log::error!("updater initialization failed: {error}");
                 return;
             }
         };
@@ -651,14 +663,14 @@ fn spawn_auto_update_check(app: AppHandle) {
         match updater.check().await {
             Ok(Some(update)) => {
                 let version = update.version.clone();
-                eprintln!("installing update {version}");
+                log::info!("installing update {version}");
                 match update.download_and_install(|_, _| {}, || {}).await {
                     Ok(()) => app.restart(),
-                    Err(error) => eprintln!("update installation failed: {error}"),
+                    Err(error) => log::error!("update installation failed: {error}"),
                 }
             }
             Ok(None) => {}
-            Err(error) => eprintln!("update check failed: {error}"),
+            Err(error) => log::error!("update check failed: {error}"),
         }
     });
 }
@@ -671,7 +683,7 @@ fn spawn_manual_update_check(app: AppHandle) {
         let updater = match app.updater() {
             Ok(updater) => updater,
             Err(error) => {
-                eprintln!("updater initialization failed: {error}");
+                log::error!("updater initialization failed: {error}");
                 show_notification(&app, NOTIFICATION_TITLE, text.update_check_failed());
                 return;
             }
@@ -684,14 +696,14 @@ fn spawn_manual_update_check(app: AppHandle) {
                 match update.download_and_install(|_, _| {}, || {}).await {
                     Ok(()) => app.restart(),
                     Err(error) => {
-                        eprintln!("update installation failed: {error}");
+                        log::error!("update installation failed: {error}");
                         show_notification(&app, NOTIFICATION_TITLE, text.update_install_failed());
                     }
                 }
             }
             Ok(None) => show_notification(&app, NOTIFICATION_TITLE, text.up_to_date()),
             Err(error) => {
-                eprintln!("update check failed: {error}");
+                log::error!("update check failed: {error}");
                 show_notification(&app, NOTIFICATION_TITLE, text.update_check_failed());
             }
         }
@@ -748,7 +760,7 @@ fn install_dev_shutdown_handler(app: AppHandle) {
         if let Err(err) = ctrlc::set_handler(move || {
             app.exit(0);
         }) {
-            eprintln!("{}", NativeText::current().dev_shutdown_handler_failed(err));
+            log::error!("{}", NativeText::current().dev_shutdown_handler_failed(err));
         }
     }
 
@@ -1028,7 +1040,7 @@ fn position_main_window(app: &App) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("main") {
         position_window_top_right(&window)?;
     } else {
-        eprintln!("[position] main window not found");
+        log::warn!("[position] main window not found");
     }
 
     Ok(())
