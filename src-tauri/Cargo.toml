@@ -1,6 +1,6 @@
 [package]
 name = "new-api-balance-orb"
-version = "0.1.8"
+version = "0.1.9"
 description = "A frameless AI balance desktop orb"
 authors = ["coderDJing"]
 edition = "2021"
